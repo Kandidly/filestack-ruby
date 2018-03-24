@@ -49,20 +49,41 @@ class FilestackClient
                end
     FilestackFilelink.new(response['handle'], security: @security, apikey: @apikey)
   end
-  # Transform an external URL 
+  # Transform an external URL
   #
-  # @param [string]    external_url   A valid URL 
+  # @param [string]    external_url   A valid URL
   #
   # @return [Filestack::Transform]
   def transform_external(external_url)
     Transform.new(external_url: external_url, security: @security, apikey: @apikey)
-  end  
+  end
 
-  def zip(destination, files)    
-    encoded_files = JSON.generate(files).gsub('"', '')
-    zip_url = "#{FilestackConfig::CDN_URL}/#{@apikey}/zip/#{encoded_files}"
-    escaped_zip_url = zip_url.gsub("[","%5B").gsub("]","%5D")
-    response = UploadUtils.make_call(escaped_zip_url, 'get')    
-    File.write(destination, response.body)
+  def zip(files, storage)
+    encoded_files = JSON
+                      .generate(files)
+                      .gsub('"', '')
+                      .gsub("[","%5B")
+                      .gsub("]","%5D")
+
+    storage_url   = storage
+                      .map { |key, value|
+                        "#{key}:#{value}"
+                      }
+                      .join(',')
+
+    zip_url        = [
+                       FilestackConfig::PROCESS_URL,
+                       'zip',
+                       "store=#{storage_url}",
+                       encoded_files,
+                     ].join('/')
+
+    response = UploadUtils.make_call(zip_url, 'get')
+
+    if response.code == 200
+      handle = response.body['url'].split('/').last
+      return response.body.merge('handle' => handle)
+    end
+    raise response.body
   end
 end

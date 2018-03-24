@@ -74,10 +74,12 @@ class Transform
 
   # Stores a transformation URL and returns a filelink
   #
+  # @param [Hash]              options        User-provided parameters
+  #
   # @return [Filestack::FilestackFilelink]
-  def store
+  def store(options = {})
     @transform_tasks.push(
-      add_transform_task('store', {})
+      add_transform_task('store', options)
     )
     response = UploadUtils.make_call(url, 'get')
     handle = response.body['url'].split('/').last
