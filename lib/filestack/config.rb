@@ -36,5 +36,6 @@ class TransformConfig
     blackwhite sepia pixelate oil_paint negative modulate
     partial_pixelate partial_blur collage upscale enhance
     redeye ascii filetype_conversion quality urlscreenshot
+    zip
   ].freeze
 end
